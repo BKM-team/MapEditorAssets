@@ -2,7 +2,7 @@ var fs = require('fs');
 
 var directory = fs.readdirSync('.');
 var IGNORED_FILES = ['./.git', './.idea', './assets.json', './process.js'];
-var PATH = './assets';
+var PATH = 'assets/';
 
 
 function readDirRecursively(dirContents, path) {
@@ -22,7 +22,7 @@ function readDirRecursively(dirContents, path) {
     } else {
       results.push({
         id: (path.replace(/\.\//g, '') + item.split('.')[0]).replace(/ /g, '_'),
-        src: path + item
+        src: path.replace(/\.\//g, '') + item
       });
     }
   });
