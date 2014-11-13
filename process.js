@@ -1,12 +1,14 @@
 var fs = require('fs');
 
 var directory = fs.readdirSync('.');
-var ignore = ['./.git', './.idea', './assets.json', './process.js'];
+var IGNORED_FILES = ['./.git', './.idea', './assets.json', './process.js'];
+var PATH = './assets';
+
 
 function readDirRecursively(dirContents, path) {
   var results = [];
   dirContents.forEach(function (item) {
-    if(ignore.indexOf(path + item) !== -1) {
+    if(IGNORED_FILES.indexOf(path + item) !== -1) {
       return;
     }
 
@@ -19,7 +21,7 @@ function readDirRecursively(dirContents, path) {
       });
     } else {
       results.push({
-        id: item.split('.')[0],
+        id: (path.replace(/\.\//g, '') + item.split('.')[0]).replace(/ /g, '_'),
         src: path + item
       });
     }
@@ -29,4 +31,7 @@ function readDirRecursively(dirContents, path) {
 }
 
 var assets = readDirRecursively(directory, './');
-fs.writeFileSync('assets.json', JSON.stringify(assets));
+fs.writeFileSync('assets.json', JSON.stringify({
+  assets: assets,
+  path: PATH
+}));
