@@ -1,0 +1,7 @@
+{
+  "name": "Croconate-Map-Editor-Assets",
+  "version": "0.0.1",
+  "dependencies": {
+    "spritesmith": "^0.20.1"
+  }
+}

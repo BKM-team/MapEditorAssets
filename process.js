@@ -1,37 +1,82 @@
 var fs = require('fs');
+var Spritesmith = require('spritesmith');
 
-var directory = fs.readdirSync('.');
-var IGNORED_FILES = ['./.git', './.idea', './assets.json', './process.js'];
-var PATH = 'assets/';
+var PATH = './assets/';
+var pathsToIds = {};
+var files = [];
 
-
-function readDirRecursively(dirContents, path) {
-  var results = [];
+function readDirRecursivelyAndCollectImageData(dirContents, path) {
   dirContents.forEach(function (item) {
-    if(IGNORED_FILES.indexOf(path + item) !== -1) {
-      return;
-    }
+    var fullPath = path + item,
+        id;
 
-    if(fs.lstatSync(path + item).isDirectory()) {
-      var newDirContents = readDirRecursively(fs.readdirSync(path + item), path + item + '/');
-
-      results.push({
-        name: item,
-        contents: newDirContents
-      });
+    if(fs.lstatSync(fullPath).isDirectory()) {
+      readDirRecursivelyAndCollectImageData(fs.readdirSync(fullPath), fullPath + '/');
     } else {
-      results.push({
-        id: (path.replace(/\.\//g, '') + item.split('.')[0]).replace(/ /g, '_'),
-        src: path.replace(/\.\//g, '') + item
-      });
+      id = (path.replace(/\.\//g, '') + item.split('.')[0]).replace(/ /g, '_');
+
+      pathsToIds[fullPath] = id;
+      files.push(path + item);
     }
   });
-
-  return results;
 }
 
-var assets = readDirRecursively(directory, './');
-fs.writeFileSync('assets.json', JSON.stringify({
-  assets: assets,
-  path: PATH
-}));
+var directoryName;
+if(!process.argv[2]) {
+  throw new Error('No directory specified');
+} else {
+  directoryName = process.argv[2];
+}
+
+if(!fs.existsSync('./' + directoryName) || !fs.lstatSync('./' + directoryName).isDirectory()) {
+  throw new Error('Argument must be directory name');
+}
+
+
+var directory = fs.readdirSync('./' + directoryName);
+readDirRecursivelyAndCollectImageData(directory, './' + directoryName + '/');
+
+Spritesmith({
+  src: files,
+  exportOpts: {
+    format: 'png'
+  }
+}, function (err, result) {
+  var assets = [];
+
+  if(err === null) {
+    Object.getOwnPropertyNames(pathsToIds).forEach(function (path) {
+      assets.push({
+        id: pathsToIds[path],
+        src: path,
+        coords: {
+          x: result.coordinates[path].x,
+          y: result.coordinates[path].y
+        }
+      });
+    });
+
+    var outputPrefix = 'processed/' + directoryName.replace(/ /g, '_');
+
+    if(!fs.existsSync('processed')) {
+      fs.mkdirSync('processed');
+    }
+
+    if(fs.existsSync(outputPrefix + '_assets.json')) {
+      fs.unlinkSync(outputPrefix + '_assets.json');
+    }
+
+    fs.writeFileSync(outputPrefix + '_assets.json', JSON.stringify({
+      assets: assets,
+      path: PATH + 'processed/'
+    }));
+
+    if(fs.existsSync(outputPrefix + '_tilemap.png')) {
+      fs.unlinkSync(outputPrefix + '_tilemap.png');
+    }
+
+    fs.writeFileSync(outputPrefix + '_tilemap.png', result.image, 'binary');
+  } else {
+    console.log(err);
+  }
+});
