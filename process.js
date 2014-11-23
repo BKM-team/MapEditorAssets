@@ -68,7 +68,8 @@ Spritesmith({
 
     fs.writeFileSync(outputPrefix + '_assets.json', JSON.stringify({
       assets: assets,
-      path: PATH + 'processed/'
+      path: PATH + 'processed/',
+      size: 32 //TODO: replace me by a parameter some day
     }));
 
     if(fs.existsSync(outputPrefix + '_tilemap.png')) {
