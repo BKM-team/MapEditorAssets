@@ -48,7 +48,6 @@ Spritesmith({
     Object.getOwnPropertyNames(pathsToIds).forEach(function (path) {
       assets.push({
         id: pathsToIds[path],
-        src: path,
         coords: {
           x: result.coordinates[path].x,
           y: result.coordinates[path].y
