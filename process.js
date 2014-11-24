@@ -43,6 +43,8 @@ Spritesmith({
   }
 }, function (err, result) {
   var assets = [];
+  var IMAGE_SUFFIX = '_tileset.png'
+  var META_SUFFIX = '_meta.json';
 
   if(err === null) {
     Object.getOwnPropertyNames(pathsToIds).forEach(function (path) {
@@ -61,21 +63,21 @@ Spritesmith({
       fs.mkdirSync('processed');
     }
 
-    if(fs.existsSync(outputPrefix + '_assets.json')) {
-      fs.unlinkSync(outputPrefix + '_assets.json');
+    if(fs.existsSync(outputPrefix + META_SUFFIX)) {
+      fs.unlinkSync(outputPrefix + META_SUFFIX);
     }
 
-    fs.writeFileSync(outputPrefix + '_assets.json', JSON.stringify({
+    fs.writeFileSync(outputPrefix + META_SUFFIX, JSON.stringify({
       assets: assets,
       path: PATH + 'processed/',
       size: 32 //TODO: replace me by a parameter some day
     }));
 
-    if(fs.existsSync(outputPrefix + '_tilemap.png')) {
-      fs.unlinkSync(outputPrefix + '_tilemap.png');
+    if(fs.existsSync(outputPrefix + IMAGE_SUFFIX)) {
+      fs.unlinkSync(outputPrefix + IMAGE_SUFFIX);
     }
 
-    fs.writeFileSync(outputPrefix + '_tilemap.png', result.image, 'binary');
+    fs.writeFileSync(outputPrefix + IMAGE_SUFFIX, result.image, 'binary');
   } else {
     console.log(err);
   }
